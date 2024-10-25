@@ -43,8 +43,6 @@ const Card: React.FC<CardProps> = ({
 
   const TRELLO_API_URL = "https://api.trello.com/1";
 
-  console.log(lists);
-
   useEffect(() => {
     const fetchLists = async () => {
       setIsLoadingLists(true);

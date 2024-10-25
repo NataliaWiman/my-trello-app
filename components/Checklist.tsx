@@ -166,7 +166,7 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
                   <li className="checklist-item" key={item.id}>
                     <label className="flex items-center gap-2">
                       <input
-                        className="peer w-4 h-4 m-0 rounded border border-gray-400 bg-gray-100 checked:bg-sky-600 checked:border-sky-600 checked:bg-checkmark bg-no-repeat bg-center appearance-none"
+                        className="peer w-4 min-w-4 h-4 m-0 rounded border border-gray-400 bg-gray-100 checked:bg-sky-600 checked:border-sky-600 checked:bg-checkmark bg-no-repeat bg-center appearance-none"
                         type="checkbox"
                         checked={item.state === "complete"}
                         onChange={(e) =>
