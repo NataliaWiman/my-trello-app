@@ -1,7 +1,9 @@
 // components/Checklist.tsx
-import React, { useState, useEffect } from "react";
 
-type ChecklistItem = {
+import React, { useState, useEffect } from "react";
+import ChecklistItem from "./ChecklistItem";
+
+type ChecklistItemType = {
   id: string;
   state: "complete" | "incomplete";
   name: string;
@@ -10,7 +12,7 @@ type ChecklistItem = {
 type ChecklistType = {
   id: string;
   name: string;
-  checkItems: ChecklistItem[];
+  checkItems: ChecklistItemType[];
 };
 
 type ChecklistProps = {
@@ -35,15 +37,16 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
   };
 
   const handleCheckItemChange = async (
-    item: ChecklistItem,
+    itemId: string,
     isChecked: boolean,
     checklistId: string
   ) => {
     const newState = isChecked ? "complete" : "incomplete";
 
-    setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+    setLoadingItems((prev) => ({ ...prev, [itemId]: true }));
 
-    const prevState = item.state;
+    // Find the item and previous state
+    let prevState: "complete" | "incomplete" = "incomplete";
 
     setChecklistsState((prevChecklists) =>
       prevChecklists.map((checklist) => {
@@ -51,7 +54,8 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
           return {
             ...checklist,
             checkItems: checklist.checkItems.map((checkItem) => {
-              if (checkItem.id === item.id) {
+              if (checkItem.id === itemId) {
+                prevState = checkItem.state;
                 return { ...checkItem, state: newState };
               }
               return checkItem;
@@ -63,24 +67,27 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
     );
 
     try {
-      const response = await fetch(
-        `https://api.trello.com/1/cards/${cardId}/checkItem/${item.id}?key=${process.env.NEXT_PUBLIC_TRELLO_API_KEY}&token=${process.env.NEXT_PUBLIC_TRELLO_TOKEN}&state=${newState}`,
-        {
-          method: "PUT",
-        }
-      );
+      const response = await fetch(`/api/cards/${cardId}/checkItem/${itemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ state: newState }),
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to update check item");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update check item");
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Revert UI changes on error
       setChecklistsState((prevChecklists) =>
         prevChecklists.map((checklist) => {
           if (checklist.id === checklistId) {
             return {
               ...checklist,
               checkItems: checklist.checkItems.map((checkItem) => {
-                if (checkItem.id === item.id) {
+                if (checkItem.id === itemId) {
                   return { ...checkItem, state: prevState };
                 }
                 return checkItem;
@@ -91,17 +98,17 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
         })
       );
       console.error(error);
-      alert(`Error updating checklist item: ${(error as Error).message}`);
+      alert(`Error updating checklist item: ${error.message}`);
     } finally {
       setLoadingItems((prev) => {
         const newState = { ...prev };
-        delete newState[item.id];
+        delete newState[itemId];
         return newState;
       });
     }
   };
 
-  const calculateCompletion = (checkItems: ChecklistItem[]) => {
+  const calculateCompletion = (checkItems: ChecklistItemType[]) => {
     if (checkItems.length === 0) return 0;
     const completedItems = checkItems.filter(
       (item) => item.state === "complete"
@@ -163,30 +170,13 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
               </div>
               <ul className="flex flex-col gap-2 py-4">
                 {sortedCheckItems.map((item) => (
-                  <li className="checklist-item" key={item.id}>
-                    <label className="flex items-center gap-2">
-                      <input
-                        className="peer w-4 min-w-4 h-4 m-0 rounded border border-gray-400 bg-gray-100 checked:bg-sky-600 checked:border-sky-600 checked:bg-checkmark bg-no-repeat bg-center appearance-none"
-                        type="checkbox"
-                        checked={item.state === "complete"}
-                        onChange={(e) =>
-                          handleCheckItemChange(
-                            item,
-                            e.target.checked,
-                            checklist.id
-                          )
-                        }
-                        disabled={!!loadingItems[item.id]}
-                      />
-                      <span
-                        className={`peer-checked:line-through peer-checked:text-gray-500 text-sm ${item.state} === "complete"
-                            ? "line-through opacity-45"
-                            : ""`}
-                      >
-                        {item.name}
-                      </span>
-                    </label>
-                  </li>
+                  <ChecklistItem
+                    key={item.id}
+                    item={item}
+                    checklistId={checklist.id}
+                    loading={!!loadingItems[item.id]}
+                    onCheckItemChange={handleCheckItemChange}
+                  />
                 ))}
               </ul>
             </div>

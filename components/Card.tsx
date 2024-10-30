@@ -1,4 +1,3 @@
-// components/Card.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -41,17 +40,13 @@ const Card: React.FC<CardProps> = ({
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [listNameState, setListName] = useState(listName);
 
-  const TRELLO_API_URL = "https://api.trello.com/1";
-
   useEffect(() => {
     const fetchLists = async () => {
       setIsLoadingLists(true);
       setListError(null);
       try {
         console.log("Fetching lists for board:", idBoard);
-        const response = await fetch(
-          `${TRELLO_API_URL}/boards/${idBoard}/lists?key=${process.env.NEXT_PUBLIC_TRELLO_API_KEY}&token=${process.env.NEXT_PUBLIC_TRELLO_TOKEN}`
-        );
+        const response = await fetch(`/api/boards/${idBoard}/lists`);
         if (!response.ok) {
           throw new Error("Failed to fetch lists");
         }
@@ -72,21 +67,18 @@ const Card: React.FC<CardProps> = ({
   const handleMoveCard = async (newListId: string, newListName: string) => {
     setIsMovingCard(true);
     try {
-      const response = await fetch(
-        `${TRELLO_API_URL}/cards/${id}?key=${process.env.NEXT_PUBLIC_TRELLO_API_KEY}&token=${process.env.NEXT_PUBLIC_TRELLO_TOKEN}&idList=${newListId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("/api/moveCard", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cardId: id, newListId }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to move card");
       }
 
-      // Update the list name in the UI
       setListName(newListName);
       setShowListDropdown(false);
     } catch (error: any) {

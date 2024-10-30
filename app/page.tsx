@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Card from "../components/Card";
-import { getMyCards } from "../api/cards";
+import Card from "@/components/Card";
 
 type CardType = {
   id: string;
@@ -39,7 +38,11 @@ const HomePage = () => {
     const fetchCards = async () => {
       setIsLoading(true);
       try {
-        const data = await getMyCards();
+        const response = await fetch("/api/cards");
+        if (!response.ok) {
+          throw new Error("Failed to fetch cards");
+        }
+        const data = await response.json();
         setCards(data);
       } catch (error) {
         console.error("Error fetching cards:", error);
@@ -51,12 +54,10 @@ const HomePage = () => {
     fetchCards();
   }, []);
 
-  // Filter out boards that don't have any To-Do cards
   const toDoCards = cards.filter(
     (card) => card.listName === "To-Do" || card.listName === "Doing"
   );
 
-  // Create an object that maps board names to the count of To-Do cards
   const boardCardCounts = toDoCards.reduce<Record<string, number>>(
     (acc, card) => {
       const boardName = card.boardName || "Unknown Board";
@@ -68,7 +69,6 @@ const HomePage = () => {
 
   const boardsWithToDoCards = Object.keys(boardCardCounts);
 
-  // Filter and sort the cards based on selected board and by boardName
   const filteredCards = selectedBoard
     ? cards.filter((card) => card.boardName === selectedBoard)
     : cards;
@@ -77,7 +77,7 @@ const HomePage = () => {
     (a.boardName || "").localeCompare(b.boardName || "")
   );
 
-  const toDoFilteredCards = sortedCards?.filter(
+  const toDoFilteredCards = sortedCards.filter(
     (card) => card.listName === "To-Do" || card.listName === "Doing"
   );
 

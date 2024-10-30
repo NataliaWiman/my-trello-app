@@ -1,7 +1,13 @@
-// Define the Trello API URL
 const TRELLO_API_URL = "https://api.trello.com/1";
+const TRELLO_API_KEY = process.env.TRELLO_API_KEY;
+const TRELLO_TOKEN = process.env.TRELLO_TOKEN;
 
-// Represents a Trello card
+if (!TRELLO_API_KEY || !TRELLO_TOKEN) {
+  throw new Error(
+    "Trello API key and token must be set in environment variables."
+  );
+}
+
 interface CardType {
   id: string;
   name: string;
@@ -16,26 +22,22 @@ interface CardType {
   checklists?: ChecklistType[];
 }
 
-// Represents a Trello board
 interface BoardType {
   id: string;
   name: string;
 }
 
-// Represents a Trello list
 interface ListType {
   id: string;
   name: string;
 }
 
-// Represents a Trello checklist
 interface ChecklistType {
   id: string;
   name: string;
   checkItems: CheckItemType[];
 }
 
-// Represents an item within a Trello checklist
 interface CheckItemType {
   id: string;
   name: string;
@@ -43,7 +45,6 @@ interface CheckItemType {
   due?: string | null;
 }
 
-// Cache structure to store fetched data
 const cache: {
   boards: Record<string, string>;
   lists: Record<string, string>;
@@ -54,22 +55,18 @@ const cache: {
   checklists: {},
 };
 
-// The getMyCards function rewritten in TypeScript
 export const getMyCards = async (): Promise<CardType[]> => {
   try {
-    // Fetch cards assigned to the authenticated user
     const response = await fetch(
-      `${TRELLO_API_URL}/members/me/cards?fields=name,url,idBoard,idList,dateLastActivity,desc,due&key=${process.env.NEXT_PUBLIC_TRELLO_API_KEY}&token=${process.env.NEXT_PUBLIC_TRELLO_TOKEN}`
+      `${TRELLO_API_URL}/members/me/cards?fields=name,url,idBoard,idList,dateLastActivity,desc,due&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`
     );
 
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
 
-    // Parse the response as an array of cards
     const cards: CardType[] = await response.json();
 
-    // Filter out cards older than 3 months
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
@@ -78,7 +75,6 @@ export const getMyCards = async (): Promise<CardType[]> => {
       return cardDate >= threeMonthsAgo;
     });
 
-    // Extract unique board and list IDs
     const boardIds: string[] = [
       ...new Set(filteredCards.map((card) => card.idBoard)),
     ];
@@ -86,7 +82,6 @@ export const getMyCards = async (): Promise<CardType[]> => {
       ...new Set(filteredCards.map((card) => card.idList)),
     ];
 
-    // Function to fetch data in batches
     const fetchInBatches = async <T>(urls: string[]): Promise<(T | null)[]> => {
       const chunkSize = 10;
       const urlChunks: string[][] = [];
@@ -99,26 +94,21 @@ export const getMyCards = async (): Promise<CardType[]> => {
         const batchResponse = await fetch(
           `${TRELLO_API_URL}/batch?urls=${encodeURIComponent(
             urlChunk.join(",")
-          )}&key=${process.env.NEXT_PUBLIC_TRELLO_API_KEY}&token=${
-            process.env.NEXT_PUBLIC_TRELLO_TOKEN
-          }`
+          )}&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`
         );
 
         if (!batchResponse.ok) {
           throw new Error("Batch request failed");
         }
 
-        // The batch response is an array of objects with status codes as keys
         const batchData: Array<{ [statusCode: string]: T }> =
           await batchResponse.json();
 
-        // Map over the batch data to extract successful responses
         allData = allData.concat(
           batchData.map((item) => {
             if (item["200"]) {
               return item["200"] as T;
             } else {
-              // Handle errors or non-200 responses as needed
               return null;
             }
           })
@@ -127,7 +117,6 @@ export const getMyCards = async (): Promise<CardType[]> => {
       return allData;
     };
 
-    // Fetch board names using batch requests
     const boardMap: Record<string, string> = {};
     const boardsToFetch: string[] = [];
 
@@ -145,12 +134,11 @@ export const getMyCards = async (): Promise<CardType[]> => {
       boardsData.forEach((board) => {
         if (board && board.id) {
           boardMap[board.id] = board.name;
-          cache.boards[board.id] = board.name; // Update cache
+          cache.boards[board.id] = board.name;
         }
       });
     }
 
-    // Fetch list names using batch requests
     const listMap: Record<string, string> = {};
     const listsToFetch: string[] = [];
 
@@ -168,12 +156,11 @@ export const getMyCards = async (): Promise<CardType[]> => {
       listsData.forEach((list) => {
         if (list && list.id) {
           listMap[list.id] = list.name;
-          cache.lists[list.id] = list.name; // Update cache
+          cache.lists[list.id] = list.name;
         }
       });
     }
 
-    // Fetch checklists for each card using batch requests
     const checklistsMap: Record<string, ChecklistType[]> = {};
     const cardsToFetch: CardType[] = [];
 
@@ -195,11 +182,10 @@ export const getMyCards = async (): Promise<CardType[]> => {
       cardsToFetch.forEach((card, index) => {
         const checklists = checklistsData[index];
         checklistsMap[card.id] = checklists || [];
-        cache.checklists[card.id] = checklists || []; // Update cache
+        cache.checklists[card.id] = checklists || [];
       });
     }
 
-    // Combine all data into cardsWithDetails
     const cardsWithDetails: CardType[] = filteredCards.map((card) => ({
       ...card,
       boardName: boardMap[card.idBoard] || "Unknown Board",
@@ -207,7 +193,6 @@ export const getMyCards = async (): Promise<CardType[]> => {
       checklists: checklistsMap[card.id] || [],
     }));
 
-    // Sort the cards by dateLastActivity, most recent first
     const sortedCards = cardsWithDetails.sort((a, b) => {
       return (
         new Date(b.dateLastActivity).getTime() -
@@ -220,4 +205,57 @@ export const getMyCards = async (): Promise<CardType[]> => {
     console.error("Error fetching cards:", error);
     throw error;
   }
+};
+
+export const moveCard = async (cardId: string, newListId: string) => {
+  const response = await fetch(
+    `${TRELLO_API_URL}/cards/${cardId}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idList: newListId }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to move card");
+  }
+
+  return response.json();
+};
+
+export const getBoardLists = async (boardId: string): Promise<ListType[]> => {
+  const response = await fetch(
+    `${TRELLO_API_URL}/boards/${boardId}/lists?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch lists");
+  }
+
+  const lists: ListType[] = await response.json();
+  return lists;
+};
+
+export const updateCheckItem = async (
+  cardId: string,
+  checkItemId: string,
+  state: "complete" | "incomplete"
+) => {
+  const response = await fetch(
+    `${TRELLO_API_URL}/cards/${cardId}/checkItem/${checkItemId}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&state=${state}`,
+    {
+      method: "PUT",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update check item");
+  }
+
+  return response.json();
 };
