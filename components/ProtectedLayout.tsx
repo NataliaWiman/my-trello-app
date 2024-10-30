@@ -7,18 +7,27 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("");
 
-  const handlePasswordSubmit = () => {
-    if (
-      password &&
-      process.env.AUTH_PASSWORD &&
-      password === process.env.AUTH_PASSWORD
-    ) {
-      setIsAuthenticated(true);
-    } else {
-      alert("Incorrect password.");
+  const handlePasswordSubmit = async () => {
+    try {
+      const response = await fetch("/api/authenticate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+      } else {
+        alert("Incorrect password.");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
