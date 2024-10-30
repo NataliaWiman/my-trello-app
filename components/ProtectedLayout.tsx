@@ -11,7 +11,11 @@ export default function ProtectedLayout({
   const [password, setPassword] = useState("");
 
   const handlePasswordSubmit = () => {
-    if (password === process.env.NEXT_PUBLIC_TRELLO_TOKEN) {
+    if (
+      password &&
+      process.env.AUTH_PASSWORD &&
+      password === process.env.AUTH_PASSWORD
+    ) {
       setIsAuthenticated(true);
     } else {
       alert("Incorrect password.");
