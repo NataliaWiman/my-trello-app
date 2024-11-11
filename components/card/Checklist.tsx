@@ -1,29 +1,16 @@
-// components/Checklist.tsx
-
+"use client";
 import React, { useState, useEffect } from "react";
 import ChecklistItem from "./ChecklistItem";
-
-type ChecklistItemType = {
-  id: string;
-  state: "complete" | "incomplete";
-  name: string;
-};
-
-type ChecklistType = {
-  id: string;
-  name: string;
-  checkItems: ChecklistItemType[];
-};
+import { ChecklistItemType, ChecklistType } from "@/types";
 
 type ChecklistProps = {
   checklists: ChecklistType[];
   cardId: string;
 };
 
-const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
+const Checklist = ({ checklists, cardId }: ChecklistProps) => {
   const [checklistsState, setChecklistsState] =
     useState<ChecklistType[]>(checklists);
-  const [showChecklist, setShowChecklist] = useState(false);
   const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
     {}
   );
@@ -31,10 +18,6 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
   useEffect(() => {
     setChecklistsState(checklists);
   }, [checklists]);
-
-  const toggleChecklist = () => {
-    setShowChecklist(!showChecklist);
-  };
 
   const handleCheckItemChange = async (
     itemId: string,
@@ -117,11 +100,7 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
   };
 
   return (
-    <div
-      className={`relative overflow-hidden transition-all ${
-        showChecklist ? "max-h-[1000px]" : "max-h-36"
-      }`}
-    >
+    <div className="relative">
       {checklistsState &&
         checklistsState.length > 0 &&
         checklistsState.map((checklist) => {
@@ -182,26 +161,6 @@ const Checklist: React.FC<ChecklistProps> = ({ checklists, cardId }) => {
             </div>
           );
         })}
-      <button
-        onClick={toggleChecklist}
-        className={`${
-          showChecklist
-            ? "relative pb-4"
-            : "absolute -bottom-0 pt-16 pb-4 bg-gradient-to-t from-white via-white to-transparent"
-        } flex items-center justify-center w-full text-sm font-semibold text-sky-700 z-10`}
-      >
-        {showChecklist ? "Hide" : "Reveal"} checklist
-        <span
-          className={`block w-6 h-6 ml-2 bg-no-repeat ${
-            showChecklist ? "rotate-180" : ""
-          }`}
-          style={{
-            backgroundImage: `url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="m6 9 6 6 6-6"/%3E%3C/svg%3E')`,
-            backgroundPosition: "center",
-            backgroundSize: "22px",
-          }}
-        ></span>
-      </button>
     </div>
   );
 };

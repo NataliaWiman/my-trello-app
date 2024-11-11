@@ -1,3 +1,5 @@
+import { BoardType, CardType, ChecklistType, ListType } from "@/types";
+
 const TRELLO_API_URL = "https://api.trello.com/1";
 const TRELLO_API_KEY = process.env.TRELLO_API_KEY;
 const TRELLO_TOKEN = process.env.TRELLO_TOKEN;
@@ -6,43 +8,6 @@ if (!TRELLO_API_KEY || !TRELLO_TOKEN) {
   throw new Error(
     "Trello API key and token must be set in environment variables."
   );
-}
-
-interface CardType {
-  id: string;
-  name: string;
-  url: string;
-  idBoard: string;
-  idList: string;
-  dateLastActivity: string;
-  desc?: string;
-  due?: string | null;
-  boardName?: string;
-  listName?: string;
-  checklists?: ChecklistType[];
-}
-
-interface BoardType {
-  id: string;
-  name: string;
-}
-
-interface ListType {
-  id: string;
-  name: string;
-}
-
-interface ChecklistType {
-  id: string;
-  name: string;
-  checkItems: CheckItemType[];
-}
-
-interface CheckItemType {
-  id: string;
-  name: string;
-  state: string;
-  due?: string | null;
 }
 
 const cache: {

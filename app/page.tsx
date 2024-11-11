@@ -1,33 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Card from "@/components/Card";
-
-type CardType = {
-  id: string;
-  name: string;
-  url: string;
-  boardName?: string;
-  idBoard: string;
-  listName?: string;
-  idList?: string;
-  desc?: string;
-  due?: string | null;
-  checklists?: ChecklistType[];
-};
-
-type ChecklistType = {
-  id: string;
-  name: string;
-  checkItems: CheckItemType[];
-};
-
-type CheckItemType = {
-  id: string;
-  name: string;
-  state: string;
-  due?: string | null;
-};
+import Card from "@/components/card/Card";
+import { CardType } from "@/types";
 
 const HomePage = () => {
   const [cards, setCards] = useState<CardType[]>([]);

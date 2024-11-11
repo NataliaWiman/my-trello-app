@@ -1,12 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import useOnClickOutside from "@/utils/useClickOutside";
+import { ListType } from "@/types";
 
-type ListType = {
-  id: string;
-  name: string;
-};
-
-type BoardsListProps = {
+export type ListsProps = {
   boardName: string;
   idBoard: string;
   show: boolean;
@@ -14,19 +10,19 @@ type BoardsListProps = {
   onSelectList: (listId: string, listName: string) => void;
 };
 
-const BoardsList: React.FC<BoardsListProps> = ({
+const Lists = ({
   boardName,
   idBoard,
   show,
   onClose,
   onSelectList,
-}) => {
-  const boardsListRef = useRef(null);
+}: ListsProps) => {
+  const listRef = useRef(null);
   const [lists, setLists] = useState<ListType[]>([]);
   const [isLoadingLists, setIsLoadingLists] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
 
-  useOnClickOutside(boardsListRef, onClose);
+  useOnClickOutside(listRef, onClose);
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -57,7 +53,7 @@ const BoardsList: React.FC<BoardsListProps> = ({
 
   return (
     <div
-      ref={boardsListRef}
+      ref={listRef}
       className="absolute top-9 -right-2 w-32 py-3 bg-white rounded-lg shadow z-50"
     >
       <p className="mb-2 px-4 text-xs text-gray-500">{boardName}</p>
@@ -82,4 +78,4 @@ const BoardsList: React.FC<BoardsListProps> = ({
   );
 };
 
-export default BoardsList;
+export default Lists;

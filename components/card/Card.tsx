@@ -2,10 +2,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Checklist from "./ui/Checklist";
-import Icon from "./icons/Icon";
-import DueDate from "./ui/DueDate";
-import BoardsList from "./ui/BoardsList";
+import Checklist from "./Checklist";
+import Icon from "../icons/Icon";
+import DueDate from "./DueDate";
+import Lists from "./Lists";
+import Content from "./Content";
 
 type CardProps = {
   id: string;
@@ -20,7 +21,7 @@ type CardProps = {
   checklists?: any[];
 };
 
-const Card: React.FC<CardProps> = ({
+const Card = ({
   id,
   name,
   url,
@@ -31,7 +32,7 @@ const Card: React.FC<CardProps> = ({
   desc,
   due,
   checklists = [],
-}) => {
+}: CardProps) => {
   const [showBoardsList, setShowBoardsList] = useState(false);
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [listNameState, setListName] = useState(listName);
@@ -108,7 +109,7 @@ const Card: React.FC<CardProps> = ({
           </button>
         )}
 
-        <BoardsList
+        <Lists
           boardName={boardName}
           idBoard={idBoard}
           show={showBoardsList}
@@ -119,15 +120,7 @@ const Card: React.FC<CardProps> = ({
 
       {desc || checklists.length > 0 ? (
         <div className="body">
-          <div>
-            {desc && (
-              <p className="text-sm text-gray-600 break-words">
-                {desc.slice(0, 200)}
-                {desc.length > 200 ? "..." : null}
-              </p>
-            )}
-            <Checklist checklists={checklists} cardId={id} />
-          </div>
+          <Content id={id} desc={desc} checklists={checklists} />
         </div>
       ) : (
         <div className="text-sm text-gray-400">Description is missing...</div>

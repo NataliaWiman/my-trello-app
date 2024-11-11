@@ -3,11 +3,13 @@ import Checklist from "./Checklist";
 import Clock from "./Clock";
 import Arrow from "./Arrow";
 import Logout from "./Logout";
+import Chevron from "./Chevron";
 
 const icons = {
-  checklist: Checklist,
-  clock: Clock,
   arrow: Arrow,
+  checklist: Checklist,
+  chevron: Chevron,
+  clock: Clock,
   logout: Logout,
 };
 

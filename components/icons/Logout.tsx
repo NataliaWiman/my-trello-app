@@ -1,6 +1,6 @@
 import React from "react";
 
-const Logout = ({ className = "" }: { className: string }) => {
+const Logout = ({ className }: { className: string }) => {
   return (
     <svg
       className={className}

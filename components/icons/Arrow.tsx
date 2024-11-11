@@ -1,6 +1,6 @@
 import React from "react";
 
-const Arrow = ({ className = "" }: { className: string }) => {
+const Arrow = ({ className }: { className: string }) => {
   return (
     <svg
       className={className}

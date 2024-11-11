@@ -1,6 +1,6 @@
 import React from "react";
 
-const Checklist = ({ className = "" }: { className: string }) => {
+const Checklist = ({ className }: { className: string }) => {
   return (
     <svg
       className={className}
