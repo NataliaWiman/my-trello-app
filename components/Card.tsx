@@ -1,7 +1,11 @@
+// components/Card.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Checklist from "./Checklist";
+import React, { useState } from "react";
+import Checklist from "./ui/Checklist";
+import Icon from "./icons/Icon";
+import DueDate from "./ui/DueDate";
+import BoardsList from "./ui/BoardsList";
 
 type CardProps = {
   id: string;
@@ -16,11 +20,6 @@ type CardProps = {
   checklists?: any[];
 };
 
-type ListType = {
-  id: string;
-  name: string;
-};
-
 const Card: React.FC<CardProps> = ({
   id,
   name,
@@ -33,36 +32,9 @@ const Card: React.FC<CardProps> = ({
   due,
   checklists = [],
 }) => {
-  const [showListDropdown, setShowListDropdown] = useState(false);
-  const [lists, setLists] = useState<ListType[]>([]);
-  const [isLoadingLists, setIsLoadingLists] = useState(false);
-  const [listError, setListError] = useState<string | null>(null);
+  const [showBoardsList, setShowBoardsList] = useState(false);
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [listNameState, setListName] = useState(listName);
-
-  useEffect(() => {
-    const fetchLists = async () => {
-      setIsLoadingLists(true);
-      setListError(null);
-      try {
-        console.log("Fetching lists for board:", idBoard);
-        const response = await fetch(`/api/boards/${idBoard}/lists`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch lists");
-        }
-        const data = await response.json();
-        setLists(data);
-      } catch (error: any) {
-        setListError(error.message);
-      } finally {
-        setIsLoadingLists(false);
-      }
-    };
-
-    if (showListDropdown) {
-      fetchLists();
-    }
-  }, [showListDropdown, idBoard]);
 
   const handleMoveCard = async (newListId: string, newListName: string) => {
     setIsMovingCard(true);
@@ -80,12 +52,16 @@ const Card: React.FC<CardProps> = ({
       }
 
       setListName(newListName);
-      setShowListDropdown(false);
+      setShowBoardsList(false);
     } catch (error: any) {
       alert(`Error moving card: ${error.message}`);
     } finally {
       setIsMovingCard(false);
     }
+  };
+
+  const handleCloseBoardsList = () => {
+    setShowBoardsList(false);
   };
 
   return (
@@ -96,7 +72,7 @@ const Card: React.FC<CardProps> = ({
         <button
           onClick={() => {
             if (!isMovingCard) {
-              setShowListDropdown(!showListDropdown);
+              setShowBoardsList(!showBoardsList);
             }
           }}
           className={`${
@@ -132,28 +108,13 @@ const Card: React.FC<CardProps> = ({
           </button>
         )}
 
-        {showListDropdown && (
-          <div className="absolute top-9 -right-2 w-32 py-3 bg-white rounded-lg shadow z-50">
-            <p className="mb-2 px-4 text-xs text-gray-500">{boardName}</p>
-            {isLoadingLists ? (
-              <div className="p-3 text-sm text-gray-500">Loading lists...</div>
-            ) : listError ? (
-              <div className="p-3 text-sm text-red-500">Error: {listError}</div>
-            ) : (
-              <ul>
-                {lists.map((list) => (
-                  <li
-                    key={list.id}
-                    className="px-4 py-1 text-sm hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleMoveCard(list.id, list.name)}
-                  >
-                    {list.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        <BoardsList
+          boardName={boardName}
+          idBoard={idBoard}
+          show={showBoardsList}
+          onClose={handleCloseBoardsList}
+          onSelectList={handleMoveCard}
+        />
       </div>
 
       {desc || checklists.length > 0 ? (
@@ -179,37 +140,12 @@ const Card: React.FC<CardProps> = ({
           rel="noopener noreferrer"
           className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-sky-700 rounded-lg hover:bg-sky-800 focus:ring-4 focus:outline-none focus:ring-sky-300"
         >
-          View on Trello
-          <svg
-            className="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 14 10"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 5h12m0 0L9 1m4 4L9 9"
-            />
-          </svg>
+          Open in Trello
+          <span className="rtl:rotate-180 w-3.5 ml-2">
+            <Icon name="arrow" />
+          </span>
         </a>
-        {due && (
-          <div
-            style={{
-              backgroundImage: `url('data:image/svg+xml,%3Csvg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M13 6a1 1 0 1 0-2 0v6a1 1 0 0 0 .293.707l2.5 2.5a1 1 0 0 0 1.414-1.414L13 11.586z" fill="%23fff"/%3E%3Cpath fill-rule="evenodd" clip-rule="evenodd" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10m-10 8a8 8 0 1 0 0-16 8 8 0 0 0 0 16" fill="%23fff"/%3E%3C/svg%3E')`,
-              backgroundPosition: "left 12px center",
-              backgroundSize: "16px",
-            }}
-            className="mt-auto py-2 px-4 pl-8 rounded-full bg-red-600 text-white text-xs bg-no-repeat"
-          >
-            {new Date(due).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </div>
-        )}
+        {due && <DueDate dueDate={due} />}
       </div>
     </div>
   );

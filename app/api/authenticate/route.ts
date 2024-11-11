@@ -19,7 +19,20 @@ export async function POST(request: NextRequest) {
   }
 
   if (password === process.env.AUTH_PASSWORD) {
-    return NextResponse.json({ authenticated: true }, { status: 200 });
+    const response = NextResponse.json(
+      { authenticated: true },
+      { status: 200 }
+    );
+
+    response.cookies.set("auth-token", "authenticated", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24, // 1 day in seconds
+      path: "/",
+    });
+
+    return response;
   } else {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }

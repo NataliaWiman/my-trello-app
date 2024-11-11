@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Logout from "./Logout";
 
 export default function ProtectedLayout({
   children,
@@ -31,6 +32,29 @@ export default function ProtectedLayout({
     }
   };
 
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch("/api/check-auth");
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (error) {
+        console.error("An error occurred while checking auth status:", error);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("An error occurred during logout:", error);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -39,7 +63,7 @@ export default function ProtectedLayout({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
-          className="rounded-l-xl border border-gray-300 py-4 px-5"
+          className="rounded-l-xl border border-gray-300 focus:border-gray-500 py-4 px-5 outline-none"
         />
         <button
           onClick={handlePasswordSubmit}
@@ -51,5 +75,12 @@ export default function ProtectedLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <div onClick={handleLogout}>
+        <Logout />
+      </div>
+      {children}
+    </>
+  );
 }
