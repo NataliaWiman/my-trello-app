@@ -7,19 +7,7 @@ import Icon from "../icons/Icon";
 import DueDate from "./DueDate";
 import Lists from "./Lists";
 import Content from "./Content";
-
-type CardProps = {
-  id: string;
-  name: string;
-  url: string;
-  idBoard: string;
-  boardName?: string;
-  listName?: string;
-  idList?: string;
-  desc?: string;
-  due?: string | null;
-  checklists?: any[];
-};
+import { CardType } from "@/types";
 
 const Card = ({
   id,
@@ -27,12 +15,12 @@ const Card = ({
   url,
   boardName = "Unknown Board",
   listName = "Unknown List",
-  idList,
   idBoard,
   desc,
   due,
   checklists = [],
-}: CardProps) => {
+  labels,
+}: CardType) => {
   const [showBoardsList, setShowBoardsList] = useState(false);
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [listNameState, setListName] = useState(listName);
@@ -117,6 +105,19 @@ const Card = ({
           onSelectList={handleMoveCard}
         />
       </div>
+
+      {/* {labels && (
+        <div className="absolute top-4 right-4">
+          {labels.map((label, index) => (
+            <span
+              key={index}
+              className={`px-2 py-1 text-xs font-semibold rounded-full`}
+            >
+              {label.name}
+            </span>
+          ))}
+        </div>
+      )} */}
 
       {desc || checklists.length > 0 ? (
         <div className="body">

@@ -23,7 +23,7 @@ const cache: {
 export const getMyCards = async (): Promise<CardType[]> => {
   try {
     const response = await fetch(
-      `${TRELLO_API_URL}/members/me/cards?fields=name,url,idBoard,idList,dateLastActivity,desc,due&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`
+      `${TRELLO_API_URL}/members/me/cards?fields=name,url,idBoard,idList,idLabels,dateLastActivity,desc,due&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}`
     );
 
     if (!response.ok) {

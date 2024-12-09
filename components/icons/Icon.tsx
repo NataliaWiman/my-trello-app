@@ -4,6 +4,7 @@ import Clock from "./Clock";
 import Arrow from "./Arrow";
 import Logout from "./Logout";
 import Chevron from "./Chevron";
+import Trello from "./Trello";
 
 const icons = {
   arrow: Arrow,
@@ -11,6 +12,7 @@ const icons = {
   chevron: Chevron,
   clock: Clock,
   logout: Logout,
+  trello: Trello,
 };
 
 const Icon = (props: { name: keyof typeof icons; className?: string }) => {

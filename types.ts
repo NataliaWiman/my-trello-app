@@ -15,6 +15,8 @@ export type CardType = {
   due?: string | null;
   dateLastActivity: string;
   checklists?: ChecklistType[];
+  labels?: LabelType[];
+  idLabels?: any[];
 };
 
 export type ChecklistType = {
@@ -39,4 +41,10 @@ export type CheckItemType = {
 export type ListType = {
   id: string;
   name: string;
+};
+
+export type LabelType = {
+  id: string;
+  name: string;
+  color: string;
 };
